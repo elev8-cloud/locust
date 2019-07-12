@@ -35,6 +35,21 @@ def parse_options():
     parser = OptionParser(usage="locust [options] [LocustClass [LocustClass2 ... ]]")
 
     parser.add_option(
+        '-S', '--schedule',
+        action="store_true",
+        dest="schedule",
+        default=False,
+        help="Use a schedule for hatch rates"
+    )
+
+    parser.add_option(
+        '--schedule-csv',
+        dest="schedule_csv",
+        default="",
+        help="CSV file containing the schedule to use"
+    )
+
+    parser.add_option(
         '-H', '--host',
         dest="host",
         default=None,

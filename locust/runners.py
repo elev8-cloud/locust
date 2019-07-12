@@ -4,8 +4,10 @@ import random
 import socket
 import traceback
 import warnings
+import csv
 from uuid import uuid4
 from time import time
+import datetime
 
 import gevent
 import six
@@ -40,6 +42,12 @@ class LocustRunner(object):
         self.hatching_greenlet = None
         self.exceptions = {}
         self.stats = global_stats
+
+        if self.options.schedule:
+            with open(self.options.schedule_csv) as csv_file:
+                reader = csv.reader(csv_file, delimiter=',')
+                self.schedule = list(reader)
+                logger.info(self.schedule)
         
         # register listener that resets stats when hatching is complete
         def on_hatch_complete(user_count):
@@ -100,8 +108,28 @@ class LocustRunner(object):
         occurrence_count = dict([(l.__name__, 0) for l in self.locust_classes])
         
         def hatch():
-            sleep_time = 1.0 / self.hatch_rate
             while True:
+                if self.options.schedule:
+                    current_time = datetime.datetime.now().time()
+                    logger.info(f'Current time: {current_time}')
+
+                    hatch_rate = 1
+
+                    for s in self.schedule:
+                        start_time = s[0]
+                        end_time = s[1]
+                        rate = s[2]
+
+                        start = datetime.time(int(start_time.split(':')[0]), int(start_time.split(':')[1]))
+                        end = datetime.time(int(end_time.split(':')[0]), int(end_time.split(':')[1]))
+
+                        if start < current_time < end:
+                            logger.info(f'Current hatch Rate: {rate}')
+                            sleep_time = int(rate)
+                            break
+                else:
+                    sleep_time = 1.0 / self.hatch_rate
+
                 if not bucket:
                     logger.info("All locusts hatched: %s" % ", ".join(["%s: %d" % (name, count) for name, count in six.iteritems(occurrence_count)]))
                     events.hatch_complete.fire(user_count=self.num_clients)
