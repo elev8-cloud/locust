@@ -418,9 +418,10 @@ class MasterLocustRunner(DistributedLocustRunner):
     def slave_count(self):
         return len(self.clients.ready) + len(self.clients.hatching) + len(self.clients.running)
 
-    def update_sched(self, id):
-        print(f"UDPATE SCHED : {id}")
-        self.server.send_to_client(Message("updatesched", None, id))
+    def update_sched(self, id, newSchedule):
+        print(f"UDPATE SCHED : {id}, {newSchedule}")
+        self.clients[id].schedule = newSchedule
+        self.server.send_to_client(Message("updatesched", {'newSchedule': newSchedule}, id))
 
 
 class SlaveLocustRunner(DistributedLocustRunner):
@@ -486,8 +487,7 @@ class SlaveLocustRunner(DistributedLocustRunner):
                 self.stop()
                 self.greenlet.kill(block=True)
             elif msg.type == 'updatesched':
-
-                self.schedule = [['00:00','23:59','99']]
+                self.schedule = msg.data['newSchedule']
 
     def stats_reporter(self):
         while True:

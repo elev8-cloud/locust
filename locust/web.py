@@ -146,7 +146,9 @@ def request_stats():
 
 @app.route("/updateSched", methods=["POST"])
 def updateSched():
-    runners.locust_runner.update_sched(request.get_json()['id'])
+    request_json = request.get_json()
+    print(f"REQUETS JSON: {request_json}")
+    runners.locust_runner.update_sched(request_json['id'], request_json['newSchedule'])
     return jsonify('yay')
 
 @app.route("/exceptions")

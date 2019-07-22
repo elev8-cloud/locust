@@ -120,16 +120,71 @@ var usersChart = new LocustLineChart($(".charts-container"), "Number of Users", 
 
 
 var slaveList = [];
+var editingLine;
 
-$("#update").click(function(event) {
-    console.log("UPDATE");
-    console.log(slaveList);
+function editSched(id) {
+    console.log(id);
+
+    editingLine = getScheduleById(id);
+
+    $("#update-id").html('Editing: ' + editingLine.id);
+    $("#update-textarea").html(csvToTextArea(editingLine.schedule));
+
+    $('#edit-sched-div').show();
+}
+
+function updateSched() {
+    var newSchedule = textAreaToArray($('#update-textarea').val());
+
+    console.log(newSchedule);
+
     $.ajax('./updateSched', {
-        data : JSON.stringify({id: slaveList[0].id}),
+        data : JSON.stringify({'id': editingLine.id, 'newSchedule': newSchedule}),
         contentType : 'application/json',
         type : 'POST'
     });
-});
+
+    editingLine = undefined;
+    $('#edit-sched-div').hide();
+}
+
+function getScheduleById(id) {
+    console.log(slaveList);
+
+    return slaveList.filter(function(slave) {
+        return slave.id == id;
+    })[0];
+}
+
+function textAreaToArray(text) {
+    console.log(text);
+    var lines = text.split('\n');
+
+    var arr = [];
+
+    for (var i = 0; i < lines.length; i++) {
+        arr.push(lines[i].split(','));
+    }
+
+    console.log(arr);
+    return arr;
+}
+
+function csvToTextArea(csv) {
+    console.log(csv);
+
+    var str = '';
+
+    for (var i = 0; i < csv.length; i++) {
+        str += csv[i].join(',');
+        if (i != csv.length - 1) {
+            str += '\n';
+        }
+    }
+
+    console.log(str);
+    return str;
+}
 
 function updateStats() {
     $.get('./stats/requests', function (report) {

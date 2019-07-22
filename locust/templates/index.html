@@ -163,12 +163,17 @@
                                 <th class="stats_label" href="#" data-sortkey="state">State</th>
                                 <th class="stats_label" href="#" data-sortkey="schedule">Schedule</th>
                                 <th class="stats_label numeric" href="#" data-sortkey="user_count" title="Number of users on this slave"># users</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                         </tbody>
                     </table>
-                    <button id="update">Update</button>
+                    <div id="edit-sched-div" style="display: none;">
+                        <p id="update-id"></p>
+                        <textarea rows="10" id="update-textarea"></textarea>
+                        <button onClick="updateSched()"">Update</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -272,6 +277,9 @@
                 </ul>
             </td>
             <td class="numeric"><%= this.user_count %></td>
+            <td>
+                <button onClick="editSched('<%= this.id %>')">Edit</button>
+            </td>
         </tr>
         <% alternate = !alternate; %>
         ]]>
