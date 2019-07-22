@@ -9,6 +9,9 @@
     <div class="top">
         <div class="top-content container">
             <img src="./static/img/logo.png?v={{ version }}" class="logo" />
+            <form action="./swarm" method="POST" id="swarm_form">
+                <button type="submit">Start swarming</button>
+            </form>
             <div class="boxes">
                 <div class="top_box box_url">
                     <div class="label">HOST</div>
@@ -50,7 +53,7 @@
         </div>
     </div>
     <div class="main">
-        <div class="start" id="start">
+        <div style="display: none;" class="start" id="start">
             <div style="position:relative;">
                 <a href="#" class="close_link">Close</a>
             </div>
@@ -158,12 +161,14 @@
                             <tr>
                                 <th class="stats_label" href="#" data-sortkey="id">Slave</th>
                                 <th class="stats_label" href="#" data-sortkey="state">State</th>
+                                <th class="stats_label" href="#" data-sortkey="schedule">Schedule</th>
                                 <th class="stats_label numeric" href="#" data-sortkey="user_count" title="Number of users on this slave"># users</th>
                             </tr>
                         </thead>
                         <tbody>
                         </tbody>
                     </table>
+                    <button id="update">Update</button>
                 </div>
             </div>
         </div>
@@ -258,12 +263,20 @@
         <tr class="<%=(alternate ? "dark" : "")%> <%=(this.name == "Total" ? "total" : "")%>">
             <td><%= this.id %></td>
             <td><%= this.state %></td>
+            <td>
+                Schedule:
+                <ul>
+                    <% for(d=0;d<this.schedule.length;d++) { %>
+                        <li><%= this.schedule[d][0] %> - <%= this.schedule[d][1] %> = <%= this.schedule[d][2] %> seconds interval 
+                    <% } %>
+                </ul>
+            </td>
             <td class="numeric"><%= this.user_count %></td>
         </tr>
         <% alternate = !alternate; %>
         ]]>
     </script>
     <script type="text/javascript" src="./static/chart.js?v={{ version }}"></script>
-    <script type="text/javascript" src="./static/locust.js?v={{ version }}"></script>
+    <script type="text/javascript" src="./static/locust.js"></script>
 </body>
 </html>

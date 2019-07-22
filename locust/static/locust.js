@@ -54,20 +54,16 @@ var slaves_tpl = $('#slave-template');
 
 $('#swarm_form').submit(function(event) {
     event.preventDefault();
-    $.post($(this).attr("action"), $(this).serialize(),
-        function(response) {
-            if (response.success) {
-                $("body").attr("class", "hatching");
-                $("#start").fadeOut();
-                $("#status").fadeIn();
-                $(".box_running").fadeIn();
-                $("a.new_test").fadeOut();
-                $("a.edit_test").fadeIn();
-                $(".user_count").fadeIn();
-            }
-        }
-    );
+    $.post($(this).attr("action"), $(this).serialize());
 });
+
+$("body").attr("class", "hatching");
+$("#start").fadeOut();
+$("#status").fadeIn();
+$(".box_running").fadeIn();
+$("a.new_test").fadeOut();
+$("a.edit_test").fadeIn();
+$(".user_count").fadeIn();
 
 $('#edit_form').submit(function(event) {
     event.preventDefault();
@@ -122,6 +118,19 @@ var rpsChart = new LocustLineChart($(".charts-container"), "Total Requests per S
 var responseTimeChart = new LocustLineChart($(".charts-container"), "Response Times (ms)", ["Median Response Time", "95% percentile"], "ms");
 var usersChart = new LocustLineChart($(".charts-container"), "Number of Users", ["Users"], "users");
 
+
+var slaveList = [];
+
+$("#update").click(function(event) {
+    console.log("UPDATE");
+    console.log(slaveList);
+    $.ajax('./updateSched', {
+        data : JSON.stringify({id: slaveList[0].id}),
+        contentType : 'application/json',
+        type : 'POST'
+    });
+});
+
 function updateStats() {
     $.get('./stats/requests', function (report) {
         $("#total_rps").html(Math.round(report.total_rps*100)/100);
@@ -132,6 +141,7 @@ function updateStats() {
 
         if (report.slaves) {
             slaves = (report.slaves).sort(sortBy(slaveSortAttribute, desc));
+            slaveList = slaves;
             $("#slaves tbody").empty();
             $("#slaves tbody").jqoteapp(slaves_tpl, slaves);
             $("#slaveCount").html(slaves.length);
@@ -171,3 +181,4 @@ function updateExceptions() {
     });
 }
 updateExceptions();
+

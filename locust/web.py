@@ -56,9 +56,9 @@ def index():
 def swarm():
     assert request.method == "POST"
 
-    locust_count = int(request.form["locust_count"])
-    hatch_rate = float(request.form["hatch_rate"])
-    runners.locust_runner.start_hatching(locust_count, hatch_rate)
+    # locust_count = int(request.form["locust_count"])
+    # hatch_rate = float(request.form["hatch_rate"])
+    runners.locust_runner.start_hatching(1, 1)
     return jsonify({'success': True, 'message': 'Swarming started'})
 
 @app.route('/stop')
@@ -134,7 +134,8 @@ def request_stats():
     if is_distributed:
         slaves = []
         for slave in runners.locust_runner.clients.values():
-            slaves.append({"id":slave.id, "state":slave.state, "user_count": slave.user_count})
+            print(slave)
+            slaves.append({"id":slave.id, "state":slave.state, "user_count": slave.user_count, "schedule": slave.schedule})
 
         report["slaves"] = slaves
     
@@ -142,6 +143,11 @@ def request_stats():
     report["user_count"] = runners.locust_runner.user_count
 
     return jsonify(report)
+
+@app.route("/updateSched", methods=["POST"])
+def updateSched():
+    runners.locust_runner.update_sched(request.get_json()['id'])
+    return jsonify('yay')
 
 @app.route("/exceptions")
 def exceptions():

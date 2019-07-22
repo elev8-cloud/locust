@@ -46,9 +46,8 @@ class LocustRunner(object):
         if self.options.schedule:
             with open(self.options.schedule_csv) as csv_file:
                 reader = csv.reader(csv_file, delimiter=',')
-                self.schedule = list(reader)
-                logger.info(self.schedule)
-        
+                self._schedule = list(reader)
+
         # register listener that resets stats when hatching is complete
         def on_hatch_complete(user_count):
             self.state = STATE_RUNNING
@@ -68,6 +67,14 @@ class LocustRunner(object):
     @property
     def user_count(self):
         return len(self.locusts)
+
+    @property
+    def schedule(self):
+        return self._schedule
+
+    @schedule.setter
+    def schedule(self, value):
+        self._schedule = value
 
     def weight_locusts(self, amount, stop_timeout = None):
         """
@@ -111,9 +118,9 @@ class LocustRunner(object):
             while True:
                 if self.options.schedule:
                     current_time = datetime.datetime.now().time()
-                    logger.info(f'Current time: {current_time}')
 
                     hatch_rate = 1
+                    sleep_time = 1
 
                     for s in self.schedule:
                         start_time = s[0]
@@ -124,18 +131,20 @@ class LocustRunner(object):
                         end = datetime.time(int(end_time.split(':')[0]), int(end_time.split(':')[1]))
 
                         if start < current_time < end:
-                            logger.info(f'Current hatch Rate: {rate}')
-                            sleep_time = int(rate)
+                            hatch_rate = int(rate)
                             break
+
+                    sleep_time = hatch_rate
+                    logger.info(f'[Runner Update] Num Locusts: {len(self.locusts)}, Current Time: {current_time}, Current Hatch Rate: {hatch_rate}')
                 else:
                     sleep_time = 1.0 / self.hatch_rate
 
-                if not bucket:
-                    logger.info("All locusts hatched: %s" % ", ".join(["%s: %d" % (name, count) for name, count in six.iteritems(occurrence_count)]))
-                    events.hatch_complete.fire(user_count=self.num_clients)
-                    return
+                # if not bucket:
+                #     logger.info("All locusts hatched: %s" % ", ".join(["%s: %d" % (name, count) for name, count in six.iteritems(occurrence_count)]))
+                #     events.hatch_complete.fire(user_count=self.num_clients)
+                #     return
 
-                locust = bucket.pop(random.randint(0, len(bucket)-1))
+                locust = self.weight_locusts(1)[0]
                 occurrence_count[locust.__name__] += 1
                 def start_locust(_):
                     try:
@@ -249,11 +258,12 @@ class DistributedLocustRunner(LocustRunner):
         pass
 
 class SlaveNode(object):
-    def __init__(self, id, state=STATE_INIT, heartbeat_liveness=3):
+    def __init__(self, id, state=STATE_INIT, heartbeat_liveness=3, schedule="NP{E"):
         self.id = id
         self.state = state
         self.user_count = 0
         self.heartbeat = heartbeat_liveness
+        self.schedule = schedule
 
 class MasterLocustRunner(DistributedLocustRunner):
     def __init__(self, *args, **kwargs):
@@ -368,7 +378,8 @@ class MasterLocustRunner(DistributedLocustRunner):
             msg.node_id = client_id
             if msg.type == "client_ready":
                 id = msg.node_id
-                self.clients[id] = SlaveNode(id, heartbeat_liveness=self.heartbeat_liveness)
+                schedule = msg.data['schedule']
+                self.clients[id] = SlaveNode(id, heartbeat_liveness=self.heartbeat_liveness, schedule=schedule)
                 logger.info("Client %r reported as ready. Currently %i clients ready to swarm." % (id, len(self.clients.ready + self.clients.running + self.clients.hatching)))
                 # balance the load distribution when new client joins
                 if self.state == STATE_RUNNING or self.state == STATE_HATCHING:
@@ -407,6 +418,11 @@ class MasterLocustRunner(DistributedLocustRunner):
     def slave_count(self):
         return len(self.clients.ready) + len(self.clients.hatching) + len(self.clients.running)
 
+    def update_sched(self, id):
+        print(f"UDPATE SCHED : {id}")
+        self.server.send_to_client(Message("updatesched", None, id))
+
+
 class SlaveLocustRunner(DistributedLocustRunner):
     def __init__(self, *args, **kwargs):
         super(SlaveLocustRunner, self).__init__(*args, **kwargs)
@@ -417,7 +433,7 @@ class SlaveLocustRunner(DistributedLocustRunner):
 
         self.greenlet.spawn(self.heartbeat).link_exception(callback=self.noop)
         self.greenlet.spawn(self.worker).link_exception(callback=self.noop)
-        self.client.send(Message("client_ready", None, self.client_id))
+        self.client.send(Message("client_ready", {'schedule': self.schedule}, self.client_id))
         self.slave_state = STATE_INIT
         self.greenlet.spawn(self.stats_reporter).link_exception(callback=self.noop)
         
@@ -455,6 +471,7 @@ class SlaveLocustRunner(DistributedLocustRunner):
                 self.slave_state = STATE_HATCHING
                 self.client.send(Message("hatching", None, self.client_id))
                 job = msg.data
+
                 self.hatch_rate = job["hatch_rate"]
                 #self.num_clients = job["num_clients"]
                 self.host = job["host"]
@@ -468,6 +485,9 @@ class SlaveLocustRunner(DistributedLocustRunner):
                 logger.info("Got quit message from master, shutting down...")
                 self.stop()
                 self.greenlet.kill(block=True)
+            elif msg.type == 'updatesched':
+
+                self.schedule = [['00:00','23:59','99']]
 
     def stats_reporter(self):
         while True:

@@ -357,12 +357,12 @@ class TaskSet(object):
                 if not self._task_queue:
                     self.schedule_task(self.get_next_task())
                 
-                try:
-                    self.execute_next_task()
-                except RescheduleTaskImmediately:
-                    pass
-                except RescheduleTask:
-                    self.wait()
+                    try:
+                        self.execute_next_task()
+                    except RescheduleTaskImmediately:
+                        pass
+                    except RescheduleTask:
+                        self.wait()
                 else:
                     self.wait()
             except InterruptTaskSet as e:
@@ -440,6 +440,9 @@ class TaskSet(object):
         classes further down the hierarchy.
         """
         raise InterruptTaskSet(reschedule)
+
+    def die(self):
+        raise GreenletExit
     
     @property
     def client(self):
