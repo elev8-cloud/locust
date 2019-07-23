@@ -4,219 +4,195 @@
     <title>Locust</title>
     <link rel="stylesheet" type="text/css" href="./static/style.css?v={{ version }}" media="screen">
     <link rel="shortcut icon" href="./static/img/favicon.ico" type="image/x-icon"/>
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
+    <script type="text/javascript" src="./static/app.js"></script>
 </head>
-<body class="{{state}}">
-    <div class="top">
-        <div class="top-content container">
-            <img src="./static/img/logo.png?v={{ version }}" class="logo" />
-            <div class="boxes">
-                <div class="top_box box_url">
-                    <form action="./swarm" method="POST" id="swarm_form">
-                        <button type="submit" class="start-button">Start swarming</button>
-                    </form>
-                </div>
-                <div class="top_box box_url">
-                    <div class="label">HOST</div>
-                    <div class="value" id="host_url">
-                        {{host}}
+<body class="{{state}}" ng-app="locust" ng-cloak>
+    <div ng-controller="MainController">
+        <div class="top">
+            <div class="top-content container">
+                <img src="./static/img/logo.png?v={{ version }}" class="logo" />
+                <div class="boxes">
+                    <div class="top_box box_url">
+                        <form action="./swarm" method="POST" id="swarm_form">
+                            <button type="submit">Start swarming</button>
+                        </form>
                     </div>
-                </div>
-                <div class="top_box box_status">
-                    <div class="label">STATUS</div>
-                    <div class="value" id="status_text">
-                        {{state}}
+                    <div class="top_box box_url">
+                        <div class="label">HOST</div>
+                        <div class="value" id="host_url">
+                            {{host}}
+                        </div>
                     </div>
-                    <div class="user_count">
-                        <span id="userCount">{{user_count}}</span> users
+                    <div class="top_box box_status">
+                        <div class="label">STATUS</div>
+                        <div class="value" id="status_text">
+                            {{state}}
+                        </div>
+                        <div class="user_count">
+                            <span id="userCount">{{user_count}}</span> users
+                        </div>
+                        <a href="#" class="new_test" id="new_test">New test</a>
+                        <a href="#" class="edit_test">Edit</a>
                     </div>
-                    <a href="#" class="new_test" id="new_test">New test</a>
-                </div>
-                {% if is_distributed %}
-                    <div class="top_box box_slaves" id="box_slaves">
-                        <div class="label">SLAVES</div>
-                        <div class="value" id="slaveCount">0</div>
-                    </div>
-                {% endif %}
-                <div class="top_box box_rps box_running" id="box_rps">
-                    <div class="label">RPS</div>
-                    <div class="value" id="total_rps">0</div>
-                </div>
-                <div class="top_box box_fail box_running" id="box_fail">
-                    <div class="label">FAILURES</div>
-                    <div class="value"><span id="fail_ratio"></span>%</div>
-                </div>
-                <div class="top_box box_stop box_running" id="box_stop">
-                    <a href="./stop" class="stop-button"><i></i>STOP</a>
-                    <a href="./stats/reset" class="reset-button">Reset<br>Stats</a>
-                </div>
-            </div>
-            <div style="clear:both;"></div>
-        </div>
-    </div>
-    <div class="main">
-        <div style="display: none;" class="start" id="start">
-            <div style="position:relative;">
-                <a href="#" class="close_link">Close</a>
-            </div>
-            <div class="padder">
-                <h2>Start new Locust swarm</h2>
-                <form action="./swarm" method="POST" id="swarm_form">
-                    <label for="locust_count">Number of users to simulate</label>
-                    <input type="text" name="locust_count" id="locust_count" class="val" /><br>
-                    <label for="hatch_rate">Hatch rate <span style="color:#8a8a8a;">(users spawned/second)</span></label>
-                    <input type="text" name="hatch_rate" id="hatch_rate" class="val" /><br>
-                    <button type="submit">Start swarming</button>
-                </form>
-                <div style="clear:right;"></div>
-            </div>
-        </div>
-
-        <div class="edit" id="edit">
-            <div style="position:relative;">
-                <a href="#" class="close_link">Close</a>
-            </div>
-            <div class="padder">
-                <h2>Change the locust count</h2>
-                <form action="./swarm" method="POST" id="edit_form">
-                    <label for="locust_count">Number of users to simulate</label>
-                    <input type="text" name="locust_count" id="new_locust_count" class="val" /><br>
-                    <label for="hatch_rate">Hatch rate <span style="color:#8a8a8a;">(users spawned/second)</span></label>
-                    <input type="text" name="hatch_rate" id="new_hatch_rate" class="val" /><br>
-                    <button type="submit">Start swarming</button>
-                </form>
-                <div style="clear:right;"></div>
-            </div>
-        </div>
-
-        <div class="status" id="status">
-            <nav class="menu">
-                <ul class="tabs container">
-                    <li><a href="#">Statistics</a></li>
-                    <li><a href="#" class="chart-tab-link">Charts</a></li>
-                    <li><a href="#">Failures</a></li>
-                    <li><a href="#">Exceptions</a></li>
-                    <li><a href="#">Download Data</a></li>
                     {% if is_distributed %}
-                    <li><a href="#">Slaves</a></li>
+                        <div class="top_box box_slaves" id="box_slaves">
+                            <div class="label">SLAVES</div>
+                            <div class="value" id="slaveCount">0</div>
+                        </div>
                     {% endif %}
-                </ul>
-            </nav>
-            <div class="panes container">
-                <div style="display:none;">
-                    <table id="stats" class="stats">
-                        <thead>
-                            <tr>
-                                <th class="stats_label" href="#" data-sortkey="method">Type</th>
+                    <div class="top_box box_rps box_running" id="box_rps">
+                        <div class="label">RPS</div>
+                        <div class="value" id="total_rps">0</div>
+                    </div>
+                    <div class="top_box box_fail box_running" id="box_fail">
+                        <div class="label">FAILURES</div>
+                        <div class="value"><span id="fail_ratio"></span>%</div>
+                    </div>
+                    <div class="top_box box_stop box_running" id="box_stop">
+                        <a href="./stop" class="stop-button"><i></i>STOP</a>
+                        <a href="./stats/reset" class="reset-button">Reset<br>Stats</a>
+                    </div>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        </div>
+
+
+
+        <div class="main">
+            <div class="status" id="status">
+                <nav class="menu">
+                    <ul class="tabs container">
+                        [{tabs}]
+                        [{ selectedTab }]
+                        <li ng-repeat="tab in tabs" ng-click="selectTab(tab)"><a href="#">[{ tab.title }]</a></li>
+                    </ul>
+                </nav>
+                <div class="panes container">
+                    <div ng-if="selectedTab.id = 'statistics'">
+                        <table id="stats" class="stats">
+                            <thead>
+                                <tr>
+                                    <th class="stats_label" href="#" data-sortkey="method">Type</th>
+                                    <th class="stats_label" href="#" data-sortkey="name">Name</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="num_requests" title="Number of successful requests"># Requests</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="num_failures" title="Number of failures"># Fails</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="median_response_time" title="Median response time">Median (ms)</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="avg_response_time" title="Average response time">Average (ms)</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="min_response_time" title="Min response time">Min (ms)</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="max_response_time" title="Max response time">Max (ms)</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="avg_content_length" title="Average response size">Average size (bytes)</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="current_rps" title="Current number of requests per second">Current RPS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div ng-if="selectedTab.id == 'charts'" id="charts">
+                        <div class="charts-container"></div>
+                        <p class="note">Note: There is no persistence of these charts, if you refresh this page, new charts will be created.</p>
+                    </div>
+
+                    <div ng-if="selectedTab.id == 'failures'">
+                        <table id="errors" class="stats">
+                            <thead>
+                                <th class="error_count stats_label" data-sortkey="1"># fails</th>
+                                <th class="stats_label" href="#" data-sortkey="method">Method</th>
                                 <th class="stats_label" href="#" data-sortkey="name">Name</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="num_requests" title="Number of successful requests"># Requests</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="num_failures" title="Number of failures"># Fails</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="median_response_time" title="Median response time">Median (ms)</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="avg_response_time" title="Average response time">Average (ms)</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="min_response_time" title="Min response time">Min (ms)</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="max_response_time" title="Max response time">Max (ms)</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="avg_content_length" title="Average response size">Average size (bytes)</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="current_rps" title="Current number of requests per second">Current RPS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="charts" style="display:none;">
-                    <div class="charts-container"></div>
-                    <p class="note">Note: There is no persistence of these charts, if you refresh this page, new charts will be created.</p>
-                </div>
-                <div style="display:none;">
-                    <table id="errors" class="stats">
-                        <thead>
-                            <th class="error_count stats_label" data-sortkey="1"># fails</th>
-                            <th class="stats_label" href="#" data-sortkey="method">Method</th>
-                            <th class="stats_label" href="#" data-sortkey="name">Name</th>
-                            <th class="error_type stats_label" data-sortkey="0">Type</th>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div style="display:none;">
-                    <table id="exceptions" class="stats">
-                        <thead>
-                            <th class="exception_occurrences stats_label" data-sortkey="1"># occurrences</th>
-                            <th class="exception_traceback stats_label" data-sortkey="0">Traceback</th>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div style="display:none;">
-                    <div style="margin-top:20px;">
-                        <a href="./stats/requests/csv">Download request statistics CSV</a><br>
-                        <a href="./stats/distribution/csv">Download response time distribution CSV</a><br>
-                        <a href="./stats/failures/csv">Download failures CSV</a><br>
-                        <a href="./exceptions/csv">Download exceptions CSV</a>
+                                <th class="error_type stats_label" data-sortkey="0">Type</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-                <div style="display:none;">
-                    <table id="slaves">
-                        <thead>
-                            <tr>
-                                <th class="stats_label" href="#" data-sortkey="id">Slave</th>
-                                <th class="stats_label" href="#" data-sortkey="state">State</th>
-                                <th class="stats_label" href="#" data-sortkey="schedule">Schedule</th>
-                                <th class="stats_label numeric" href="#" data-sortkey="user_count" title="Number of users on this slave"># users</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                    <div id="edit-sched-div" style="display: none;">
-                        <p id="update-id"></p>
-                        <textarea rows="10" id="update-textarea"></textarea>
-                        <button onClick="updateSched()"">Update</button>
+
+                    <div ng-if="selectedTab == 'exceptions'">
+                        <table id="exceptions" class="stats">
+                            <thead>
+                                <th class="exception_occurrences stats_label" data-sortkey="1"># occurrences</th>
+                                <th class="exception_traceback stats_label" data-sortkey="0">Traceback</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div ng-if="selectedTab == 'download'">
+                        <div style="margin-top:20px;">
+                            <a href="./stats/requests/csv">Download request statistics CSV</a><br>
+                            <a href="./stats/distribution/csv">Download response time distribution CSV</a><br>
+                            <a href="./stats/failures/csv">Download failures CSV</a><br>
+                            <a href="./exceptions/csv">Download exceptions CSV</a>
+                        </div>
+                    </div>
+
+                    <div ng-if="selectedTab == 'slaves'">
+                        <table id="slaves">
+                            <thead>
+                                <tr>
+                                    <th class="stats_label" href="#" data-sortkey="id">Slave</th>
+                                    <th class="stats_label" href="#" data-sortkey="state">State</th>
+                                    <th class="stats_label" href="#" data-sortkey="schedule">Schedule</th>
+                                    <th class="stats_label numeric" href="#" data-sortkey="user_count" title="Number of users on this slave"># users</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <div id="edit-sched-div" style="display: none;">
+                            <p id="update-id"></p>
+                            <textarea rows="10" id="update-textarea"></textarea>
+                            <button onClick="updateSched()"">Update</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="about" style="display:none;">
-            <div style="position:relative;">
-                <a href="#" class="close_link">Close</a>
+            <div class="about" style="display:none;">
+                <div style="position:relative;">
+                    <a href="#" class="close_link">Close</a>
+                </div>
+                <div class="padder">
+                    <h1>About</h1>
+                    <p>
+                        The original idea for Locust was Carl Byström's who made a first proof of concept in June 2010.
+                        Jonatan Heyman picked up Locust in January 2011, implemented the current concept of Locust classes
+                        and made it work distributed across multiple machines.
+                    </p>
+                    <p>
+                        Jonatan, Carl and Joakim Hamrén has continued the development of Locust at their job,
+                        ESN Social Software, who have adopted Locust as an inhouse Open Source project.
+                    </p>
+
+                    <h1>Authors and Copyright</h1>
+                    <a href="http://cgbystrom.com/">Carl Byström</a> (<a href="https://twitter.com/cgbystrom/">@cgbystrom</a>)<br>
+                    <a href="http://heyman.info/">Jonatan Heyman</a> (<a href="https://twitter.com/jonatanheyman/">@jonatanheyman</a>)<br>
+                    Joakim Hamrén (<a href="https://twitter.com/Jahaaja/">@jahaaja</a>)<br>
+                    <a href="http://esn.me/">ESN Social Software</a> (<a href="https://twitter.com/uprise_ea/">@uprise_ea</a>)<br>
+                    Hugo Heyman (<a href="https://twitter.com/hugoheyman/">@hugoheyman</a>)
+
+
+                    <h1>License</h1>
+                    Open source licensed under the MIT license.
+
+                    <h2>Version <a href="https://github.com/locustio/locust/releases/tag/{{version}}">{{version}}</a></h2>
+                    <br>
+                    <a href="https://locust.io/">https://locust.io</a>
+                </div>
             </div>
-            <div class="padder">
-                <h1>About</h1>
-                <p>
-                    The original idea for Locust was Carl Byström's who made a first proof of concept in June 2010.
-                    Jonatan Heyman picked up Locust in January 2011, implemented the current concept of Locust classes
-                    and made it work distributed across multiple machines.
-                </p>
-                <p>
-                    Jonatan, Carl and Joakim Hamrén has continued the development of Locust at their job,
-                    ESN Social Software, who have adopted Locust as an inhouse Open Source project.
-                </p>
-
-                <h1>Authors and Copyright</h1>
-                <a href="http://cgbystrom.com/">Carl Byström</a> (<a href="https://twitter.com/cgbystrom/">@cgbystrom</a>)<br>
-                <a href="http://heyman.info/">Jonatan Heyman</a> (<a href="https://twitter.com/jonatanheyman/">@jonatanheyman</a>)<br>
-                Joakim Hamrén (<a href="https://twitter.com/Jahaaja/">@jahaaja</a>)<br>
-                <a href="http://esn.me/">ESN Social Software</a> (<a href="https://twitter.com/uprise_ea/">@uprise_ea</a>)<br>
-                Hugo Heyman (<a href="https://twitter.com/hugoheyman/">@hugoheyman</a>)
-
-
-                <h1>License</h1>
-                Open source licensed under the MIT license.
-
-                <h2>Version <a href="https://github.com/locustio/locust/releases/tag/{{version}}">{{version}}</a></h2>
-                <br>
-                <a href="https://locust.io/">https://locust.io</a>
-            </div>
         </div>
+        <nav class="footer">
+            <div class="container">
+                <a href="#" onclick="$('.about').fadeIn();">About</a>
+            </div>
+        </nav>
     </div>
-    <nav class="footer">
-        <div class="container">
-            <a href="#" onclick="$('.about').fadeIn();">About</a>
-        </div>
-    </nav>
 
 
     <script type="text/javascript" src="./static/jquery-1.11.3.min.js"></script>
