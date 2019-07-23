@@ -89,6 +89,17 @@ a:hover {
 .boxes .box_status .value {
     text-transform: uppercase;
 }
+.start-button {
+    height: 60px;
+    max-width: 80px;
+    text-align: center;
+    background: green;
+    padding: 5px;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
 .top_box .stop-button {
     display: block;
     float: left;

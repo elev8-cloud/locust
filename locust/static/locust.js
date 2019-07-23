@@ -123,12 +123,10 @@ var slaveList = [];
 var editingLine;
 
 function editSched(id) {
-    console.log(id);
-
     editingLine = getScheduleById(id);
 
     $("#update-id").html('Editing: ' + editingLine.id);
-    $("#update-textarea").html(csvToTextArea(editingLine.schedule));
+    $("#update-textarea").val(csvToTextArea(editingLine.schedule));
 
     $('#edit-sched-div').show();
 }

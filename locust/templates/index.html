@@ -9,10 +9,12 @@
     <div class="top">
         <div class="top-content container">
             <img src="./static/img/logo.png?v={{ version }}" class="logo" />
-            <form action="./swarm" method="POST" id="swarm_form">
-                <button type="submit">Start swarming</button>
-            </form>
             <div class="boxes">
+                <div class="top_box box_url">
+                    <form action="./swarm" method="POST" id="swarm_form">
+                        <button type="submit" class="start-button">Start swarming</button>
+                    </form>
+                </div>
                 <div class="top_box box_url">
                     <div class="label">HOST</div>
                     <div class="value" id="host_url">
@@ -28,7 +30,6 @@
                         <span id="userCount">{{user_count}}</span> users
                     </div>
                     <a href="#" class="new_test" id="new_test">New test</a>
-                    <a href="#" class="edit_test">Edit</a>
                 </div>
                 {% if is_distributed %}
                     <div class="top_box box_slaves" id="box_slaves">
