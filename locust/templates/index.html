@@ -4,10 +4,6 @@
     <title>Locust</title>
     <link rel="stylesheet" type="text/css" href="./static/style.css?v={{ version }}" media="screen">
     <link rel="shortcut icon" href="./static/img/favicon.ico" type="image/x-icon"/>
-
-
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
-    <script type="text/javascript" src="./static/app.js"></script>
 </head>
 <body class="{{state}}" ng-app="locust" ng-cloak>
     <div ng-controller="MainController">
@@ -16,9 +12,7 @@
                 <img src="./static/img/logo.png?v={{ version }}" class="logo" />
                 <div class="boxes">
                     <div class="top_box box_url">
-                        <form action="./swarm" method="POST" id="swarm_form">
-                            <button type="submit">Start swarming</button>
-                        </form>
+                        <a ng-click="startSwarming()">Start Swarming</a>
                     </div>
                     <div class="top_box box_url">
                         <div class="label">HOST</div>
@@ -66,13 +60,11 @@
             <div class="status" id="status">
                 <nav class="menu">
                     <ul class="tabs container">
-                        [{tabs}]
-                        [{ selectedTab }]
                         <li ng-repeat="tab in tabs" ng-click="selectTab(tab)"><a href="#">[{ tab.title }]</a></li>
                     </ul>
                 </nav>
                 <div class="panes container">
-                    <div ng-if="selectedTab.id = 'statistics'">
+                    <div ng-show="selectedTab.id == 'statistics'">
                         <table id="stats" class="stats">
                             <thead>
                                 <tr>
@@ -89,16 +81,28 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr ng-repeat="stat in stats" ng-class="{'total': stat.name == 'Total'}">
+                                    <td>[{ stat.method }]</td>
+                                    <td class="name">[{ stat.name }]</td>
+                                    <td class="numeric">[{ stat.num_requests }]</td>
+                                    <td class="numeric">[{ stat.num_failures }]</td>
+                                    <td class="numeric">[{ stat.median_response_time | number:2 }]</td>
+                                    <td class="numeric">[{ stat.avg_response_time | number:2 }]</td>
+                                    <td class="numeric">[{ stat.min_response_time | number:2 }]</td>
+                                    <td class="numeric">[{ stat.max_response_time | number:2 }]</td>
+                                    <td class="numeric">[{ stat.avg_content_length }]</td>
+                                    <td class="numeric">[{ stat.current_rps }]</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div ng-if="selectedTab.id == 'charts'" id="charts">
+                    <div ng-show="selectedTab.id == 'charts'" id="charts">
                         <div class="charts-container"></div>
                         <p class="note">Note: There is no persistence of these charts, if you refresh this page, new charts will be created.</p>
                     </div>
 
-                    <div ng-if="selectedTab.id == 'failures'">
+                    <div ng-show="selectedTab.id == 'failures'">
                         <table id="errors" class="stats">
                             <thead>
                                 <th class="error_count stats_label" data-sortkey="1"># fails</th>
@@ -107,11 +111,17 @@
                                 <th class="error_type stats_label" data-sortkey="0">Type</th>
                             </thead>
                             <tbody>
+                                <tr ng-repeat="error in errors">
+                                    <td>[{ error.occurrences }]</td>
+                                    <td>[{ error.method }]</td>
+                                    <td>[{ error.name }]</td>
+                                    <td>[{ error.error }]</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div ng-if="selectedTab == 'exceptions'">
+                    <div ng-show="selectedTab.id == 'exceptions'">
                         <table id="exceptions" class="stats">
                             <thead>
                                 <th class="exception_occurrences stats_label" data-sortkey="1"># occurrences</th>
@@ -122,7 +132,7 @@
                         </table>
                     </div>
 
-                    <div ng-if="selectedTab == 'download'">
+                    <div ng-show="selectedTab.id == 'download-data'">
                         <div style="margin-top:20px;">
                             <a href="./stats/requests/csv">Download request statistics CSV</a><br>
                             <a href="./stats/distribution/csv">Download response time distribution CSV</a><br>
@@ -131,7 +141,7 @@
                         </div>
                     </div>
 
-                    <div ng-if="selectedTab == 'slaves'">
+                    <div ng-show="selectedTab.id == 'slaves'">
                         <table id="slaves">
                             <thead>
                                 <tr>
@@ -143,13 +153,32 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr ng-repeat="slave in slaveList">
+                                    <td>[{ slave.id }]</td>
+                                    <td>[{ slave.state }]</td>
+                                    <td>
+                                        <table>
+                                            <thead>
+                                                <th>Start Time</th>
+                                                <th>End Time</th>
+                                                <th>Interval (sec)</th>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="s in slave.schedule">
+                                                    <td>[{ s[0] }]</td>
+                                                    <td>[{ s[1] }]</td>
+                                                    <td>[{ s[2] }]</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    <td class="numeric">[{ slave.user_count }]</td>
+                                    <td>
+                                        <button ng-click="editSlaveSchedule(slave)">Edit</button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
-                        <div id="edit-sched-div" style="display: none;">
-                            <p id="update-id"></p>
-                            <textarea rows="10" id="update-textarea"></textarea>
-                            <button onClick="updateSched()"">Update</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -192,8 +221,24 @@
                 <a href="#" onclick="$('.about').fadeIn();">About</a>
             </div>
         </nav>
-    </div>
 
+        <modal id="custom-modal-1">
+            <div class="modal">
+                <div class="modal-body">
+                    <h1>Edit Slave Schedule</h1>
+                    <p>Slave ID: [{ editingSlave.id }]</p>
+
+                    <textarea rows="10" id="update-textarea" ng-model="editingSlave.textSchedule"></textarea>
+
+                    <div>
+                        <button ng-click="saveEditedSlave()"">Update</button>
+                        <button ng-click="vm.closeModal('custom-modal-1');">Close</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-background"></div>
+        </modal>        
+    </div>
 
     <script type="text/javascript" src="./static/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="./static/jquery.jqote2.min.js"></script>
@@ -202,66 +247,13 @@
     <script type="text/javascript" src="./static/echarts.common.min.js"></script>
     <!-- vintage theme of echarts -->
     <script type="text/javascript" src="./static/vintage.js"></script>
-    <script type="text/x-jqote-template" id="stats-template">
-        <![CDATA[
-        <tr class="<%=(alternate ? "dark" : "")%> <%=(this.name == "Total" ? "total" : "")%>">
-            <td><%= (this.method ? this.method : "") %></td>
-            <td class="name" title="<%= this.name %>"><%= this.name %></td>
-            <td class="numeric"><%= this.num_requests %></td>
-            <td class="numeric"><%= this.num_failures %></td>
-            <td class="numeric"><%= Math.round(this.median_response_time) %></td>
-            <td class="numeric"><%= Math.round(this.avg_response_time) %></td>
-            <td class="numeric"><%= this.min_response_time %></td>
-            <td class="numeric"><%= this.max_response_time %></td>
-            <td class="numeric"><%= Math.round(this.avg_content_length) %></td>
-            <td class="numeric"><%= Math.round(this.current_rps*100)/100 %></td>
-        </tr>
-        <% alternate = !alternate; %>
-        ]]>
-    </script>
-    <script type="text/x-jqote-template" id="errors-template">
-        <![CDATA[
-        <tr class="<%=(alternate ? "dark" : "")%>">
-            <td><%= this.occurrences %></td>
-            <td><%= this.method %></td>
-            <td><%= this.name %></td>
-            <td><%= function(e) { return e.replace("<", "&lt;"); }(this.error) %></td>
-        </tr>
-        <% alternate = !alternate; %>
-        ]]>
-    </script>
-    <script type="text/x-jqote-template" id="exceptions-template">
-        <![CDATA[
-        <tr class="<%=(alternate ? "dark" : "")%>">
-            <td class="occurrences"><%= this.count %></td>
-            <td class="traceback" title="Occured on: <%= this.nodes %>"><%= function(e) { return e.replace("<", "&lt;"); }(this.traceback) %>
-<%= function(e) { return e.replace("<", "&lt;"); }(this.msg) %></td>
-        </tr>
-        <% alternate = !alternate; %>
-        ]]>
-    </script>
-    <script type="text/x-jqote-template" id="slave-template">
-        <![CDATA[
-        <tr class="<%=(alternate ? "dark" : "")%> <%=(this.name == "Total" ? "total" : "")%>">
-            <td><%= this.id %></td>
-            <td><%= this.state %></td>
-            <td>
-                Schedule:
-                <ul>
-                    <% for(d=0;d<this.schedule.length;d++) { %>
-                        <li><%= this.schedule[d][0] %> - <%= this.schedule[d][1] %> = <%= this.schedule[d][2] %> seconds interval 
-                    <% } %>
-                </ul>
-            </td>
-            <td class="numeric"><%= this.user_count %></td>
-            <td>
-                <button onClick="editSched('<%= this.id %>')">Edit</button>
-            </td>
-        </tr>
-        <% alternate = !alternate; %>
-        ]]>
-    </script>
+
     <script type="text/javascript" src="./static/chart.js?v={{ version }}"></script>
     <script type="text/javascript" src="./static/locust.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
+    <script type="text/javascript" src="./static/app.js"></script>
+    <script type="text/javascript" src="./static/angular/modal.js"></script>
+    <script type="text/javascript" src="./static/controller.js"></script>
 </body>
 </html>

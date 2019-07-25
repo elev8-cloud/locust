@@ -244,7 +244,6 @@ a:hover {
 
 .running .status, .hatching .status {display: block;}
 .stopped .status {display: block;}
-.ready .status {display: none;}
 
 .stopped .boxes .edit_test, .ready .boxes .edit_test {display: none;}
 .stopped .boxes .user_count, .ready .boxes .user_count {display: none;}
@@ -363,10 +362,14 @@ a:hover {
 }
 #charts .chart {
     height: 350px;
+    width: 100%;
     margin-bottom: 30px;
     box-sizing: border-box;
     border: 1px solid #11271e;
     border-radius: 3px;
+}
+#charts div, #charts div canvas {
+    width: 100%;
 }
 #charts .note {
     color: #b3c3bc;
@@ -468,3 +471,56 @@ ul.tabs li a.current:after {
     margin-right: 10px;
     color: #48a584;
 }
+
+/* MODAL STYLES
+-------------------------------*/
+modal {
+    /* modals are hidden by default */
+  
+    display: none;
+  }
+  modal .modal {
+    /* modal container fixed across whole screen */
+  
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    /* z-index must be higher than .modal-background */
+  
+    z-index: 1000;
+    /* enables scrolling for tall modals */
+  
+    overflow: auto;
+    color: black;
+  }
+  modal .modal .modal-body {
+    padding: 20px;
+    background: #fff;
+    /* margin exposes part of the modal background */
+  
+    margin: 40px;
+  }
+  modal .modal-background {
+    /* modal background fixed across whole screen */
+  
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    /* semi-transparent black  */
+  
+    background-color: #000;
+    opacity: 0.75;
+    /* z-index must be below .modal and above everything else  */
+  
+    z-index: 900;
+  }
+  body.modal-open {
+    /* body overflow is hidden to hide main scrollbar when modal window is open */
+  
+    overflow: hidden;
+  }
+  

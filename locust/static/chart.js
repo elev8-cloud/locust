@@ -24,7 +24,7 @@
                 this.data.push([]);
             }
             
-            this.chart = echarts.init(this.element[0], 'vintage');
+            this.chart = echarts.init(this.element[0], 'vintage', {width: '100%'});
             this.chart.setOption({
                 title: {
                     text: this.title,
