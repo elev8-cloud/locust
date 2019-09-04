@@ -16,7 +16,7 @@ from . import events, runners, web
 from .core import HttpLocust, Locust
 from .inspectlocust import get_task_ratio_dict, print_task_ratio
 from .log import console_logger, setup_logging
-from .runners import LocalLocustRunner, MasterLocustRunner, SlaveLocustRunner
+from .runners import LocalLocustRunner, MasterLocustRunner, SlaveLocustRunner, ScheduledMasterLocustRunner
 from .stats import (print_error_report, print_percentile_stats, print_stats,
                     stats_printer, stats_writer, write_stat_csvs)
 from .util.time import parse_timespan
@@ -86,6 +86,15 @@ def parse_options():
         dest='csvfilebase',
         default=None,
         help="Store current request stats to files in CSV format.",
+    )
+
+    # if locust should be run in scheduled, distributed mode as master
+    parser.add_option(
+        '--schedule-master',
+        action='store_true',
+        dest='schedule_master',
+        default=False,
+        help="Set locust to run in scheduled, distributed mode with this process as master"
     )
 
     # if locust should be run in distributed mode as master
@@ -511,7 +520,7 @@ def main():
         logger.info("Starting web monitor at %s:%s" % (options.web_host or "*", options.port))
         main_greenlet = gevent.spawn(web.start, locust_classes, options)
     
-    if not options.master and not options.slave:
+    if not options.master and not options.slave and not options.schedule_master:
         runners.locust_runner = LocalLocustRunner(locust_classes, options)
         # spawn client spawning/hatching greenlet
         if options.no_web:
@@ -519,18 +528,27 @@ def main():
             main_greenlet = runners.locust_runner.greenlet
         if options.run_time:
             spawn_run_time_limit_greenlet()
-    elif options.master:
-        runners.locust_runner = MasterLocustRunner(locust_classes, options)
-        if options.no_web:
-            while len(runners.locust_runner.clients.ready)<options.expect_slaves:
-                logging.info("Waiting for slaves to be ready, %s of %s connected",
-                             len(runners.locust_runner.clients.ready), options.expect_slaves)
-                time.sleep(1)
-
-            runners.locust_runner.start_hatching(options.num_clients, options.hatch_rate)
+    elif options.master or options.schedule_master:
+        if options.schedule_master:
+            runners.locust_runner = ScheduledMasterLocustRunner(locust_classes, options)
+            runners.locust_runner.state = 'hatching'
+            runners.locust_runner.start_hatching(500, 500)
             main_greenlet = runners.locust_runner.greenlet
             if options.run_time:
                 spawn_run_time_limit_greenlet()
+        else:
+            runners.locust_runner = MasterLocustRunner(locust_classes, options)
+
+            if options.no_web:
+                while len(runners.locust_runner.clients.ready)<options.expect_slaves:
+                    logging.info("Waiting for slaves to be ready, %s of %s connected",
+                                len(runners.locust_runner.clients.ready), options.expect_slaves)
+                    time.sleep(1)
+
+                runners.locust_runner.start_hatching(options.num_clients, options.hatch_rate)
+                main_greenlet = runners.locust_runner.greenlet
+                if options.run_time:
+                    spawn_run_time_limit_greenlet()
     elif options.slave:
         if options.run_time:
             logger.error("--run-time should be specified on the master node, and not on slave nodes")

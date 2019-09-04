@@ -170,11 +170,6 @@
                         <tbody>
                         </tbody>
                     </table>
-                    <div id="edit-sched-div" style="display: none;">
-                        <p id="update-id"></p>
-                        <textarea rows="10" id="update-textarea"></textarea>
-                        <button onClick="updateSched()"">Update</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -218,6 +213,19 @@
         </div>
     </nav>
 
+    <div id="modal-edit-slave" class="modal">
+        <div class="modal__overlay" data-micromodal-close>
+            <div class="modal-container">
+                <a class="modal-exit" aria-label="Close modal" data-micromodal-close>close</a>
+                    <h2 id="modal-title">Edit Slave Schedule</h2>
+                <div id="modal-content">
+                    <p id="update-id"></p>
+                    <textarea rows="10" id="update-textarea"></textarea>
+                    <button onClick="updateSched()" data-micromodal-close>Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="text/javascript" src="./static/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="./static/jquery.jqote2.min.js"></script>
@@ -286,6 +294,7 @@
         ]]>
     </script>
     <script type="text/javascript" src="./static/chart.js?v={{ version }}"></script>
+    <script type="text/javascript" src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
     <script type="text/javascript" src="./static/locust.js"></script>
 </body>
 </html>

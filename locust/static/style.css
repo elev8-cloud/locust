@@ -30,6 +30,10 @@ a:hover {
     color: #4ff9bd;
 }
 
+textarea {
+    display: block;
+}
+
 .top {
     background: url(img/top_bg.png);
     width: 100%;
@@ -467,4 +471,46 @@ ul.tabs li a.current:after {
 .footer a {
     margin-right: 10px;
     color: #48a584;
+}
+
+.modal {
+    display: none;
+}
+.modal.is-open {
+    display: block;
+}
+.modal__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99;
+}
+.modal-container {
+    max-width: 350px;
+    height: auto;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 30px;
+    background: white;
+    color: black;
+    border-radius: 5px;
+}
+.modal .modal-title {
+    margin: 0;
+}
+.modal .modal-exit {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    color: black;
+    cursor: pointer;
+    font-size: 0.9em;
 }

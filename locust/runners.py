@@ -258,7 +258,7 @@ class DistributedLocustRunner(LocustRunner):
         pass
 
 class SlaveNode(object):
-    def __init__(self, id, state=STATE_INIT, heartbeat_liveness=3, schedule="NP{E"):
+    def __init__(self, id, state=STATE_INIT, heartbeat_liveness=3, schedule=""):
         self.id = id
         self.state = state
         self.user_count = 0
@@ -422,6 +422,35 @@ class MasterLocustRunner(DistributedLocustRunner):
         print(f"UDPATE SCHED : {id}, {newSchedule}")
         self.clients[id].schedule = newSchedule
         self.server.send_to_client(Message("updatesched", {'newSchedule': newSchedule}, id))
+
+class ScheduledMasterLocustRunner(MasterLocustRunner):
+    def __init__(self, *args, **kwargs):
+        super(ScheduledMasterLocustRunner, self).__init__(*args, **kwargs)
+
+    def start_hatching(self, locust_count, hatch_rate):
+        num_slaves = len(self.clients.ready) + len(self.clients.running) + len(self.clients.hatching)
+        slave_num_clients = locust_count // (num_slaves or 1)
+        slave_hatch_rate = float(hatch_rate) / (num_slaves or 1)
+
+        logger.info("Sending hatch jobs to %d ready clients", num_slaves)
+
+        if self.state != STATE_RUNNING and self.state != STATE_HATCHING:
+            self.stats.clear_all()
+            self.exceptions = {}
+            events.master_start_hatching.fire()
+        
+        for client in (self.clients.ready + self.clients.running + self.clients.hatching):
+            data = {
+                "hatch_rate":slave_hatch_rate,
+                "num_clients":slave_num_clients,
+                "host":self.host,
+                "stop_timeout":None
+            }
+
+            self.server.send_to_client(Message("hatch", data, client.id))
+        
+        self.stats.start_time = time()
+        self.state = STATE_HATCHING
 
 
 class SlaveLocustRunner(DistributedLocustRunner):

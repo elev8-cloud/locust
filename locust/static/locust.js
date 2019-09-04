@@ -128,7 +128,7 @@ function editSched(id) {
     $("#update-id").html('Editing: ' + editingLine.id);
     $("#update-textarea").val(csvToTextArea(editingLine.schedule));
 
-    $('#edit-sched-div').show();
+    MicroModal.show('modal-edit-slave');
 }
 
 function updateSched() {
@@ -235,3 +235,6 @@ function updateExceptions() {
 }
 updateExceptions();
 
+
+
+MicroModal.init();
