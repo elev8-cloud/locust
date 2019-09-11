@@ -134,7 +134,6 @@ def request_stats():
     if is_distributed:
         slaves = []
         for slave in runners.locust_runner.clients.values():
-            print(slave)
             slaves.append({"id":slave.id, "state":slave.state, "user_count": slave.user_count, "schedule": slave.schedule})
 
         report["slaves"] = slaves
@@ -147,7 +146,6 @@ def request_stats():
 @app.route("/updateSched", methods=["POST"])
 def updateSched():
     request_json = request.get_json()
-    print(f"REQUETS JSON: {request_json}")
     runners.locust_runner.update_sched(request_json['id'], request_json['newSchedule'])
     return jsonify('yay')
 

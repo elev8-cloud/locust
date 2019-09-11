@@ -130,10 +130,15 @@ class LocustRunner(object):
                         start = datetime.time(int(start_time.split(':')[0]), int(start_time.split(':')[1]))
                         end = datetime.time(int(end_time.split(':')[0]), int(end_time.split(':')[1]))
 
-                        if start < current_time < end:
-                            hatch_rate = int(rate)
-                            break
-
+                        if start < end:
+                            if start < current_time < end:
+                                hatch_rate = int(rate)
+                                break
+                        else:
+                            if current_time > start:
+                                hatch_rate = int(rate)
+                                break
+                            
                     sleep_time = hatch_rate
                     logger.info(f'[Runner Update] Num Locusts: {len(self.locusts)}, Current Time: {current_time}, Current Hatch Rate: {hatch_rate}')
                 else:
@@ -419,7 +424,6 @@ class MasterLocustRunner(DistributedLocustRunner):
         return len(self.clients.ready) + len(self.clients.hatching) + len(self.clients.running)
 
     def update_sched(self, id, newSchedule):
-        print(f"UDPATE SCHED : {id}, {newSchedule}")
         self.clients[id].schedule = newSchedule
         self.server.send_to_client(Message("updatesched", {'newSchedule': newSchedule}, id))
 
